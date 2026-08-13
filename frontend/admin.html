@@ -1,0 +1,184 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ZYREX Admin</title><style>
+body{font-family:Arial,sans-serif;background:#0b0d10;color:#eee;margin:0;padding:24px;max-width:1100px;margin-inline:auto}
+button,input,select,textarea{padding:11px;border-radius:8px;border:1px solid #333;background:#15191f;color:#fff;box-sizing:border-box;font:inherit}
+button{cursor:pointer}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.bar input{flex:1;min-width:220px}
+.order,.card{border:1px solid #242a33;border-radius:14px;padding:18px;margin:12px 0;background:#101318}
+.muted{color:#8c95a3}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.proof{max-width:360px;max-height:500px;display:block;margin-top:12px;border-radius:8px}
+.paid{color:#72e6a5}
+.wait{color:#ffd166}
+.rej{color:#ff7b7b}
+.auth{max-width:430px;margin:8vh auto;border:1px solid #242a33;border-radius:18px;padding:24px;background:#101318}
+.auth form{display:grid;gap:10px}
+.auth input{width:100%}
+.error{color:#ff7b7b;margin-top:12px}
+.hidden{display:none!important}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.top button{white-space:nowrap}
+.tabs{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap}
+.tabs button{background:#15191f;color:#8c95a3;border:1px solid #242a33}
+.tabs button.active{background:#fff;color:#0b0d10;border-color:#fff}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid2 label{display:grid;gap:5px;font-size:12px;color:#8c95a3}
+.grid2 label.full{grid-column:1/-1}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.row small{color:#8c95a3;display:block;margin-top:4px}
+.pill{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid #333}
+.pill.on{color:#72e6a5;border-color:#2c5a41}
+.pill.off{color:#8c95a3}
+.form-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+img.thumb{width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid #242a33}
+</style></head><body><div class="admin-access-note">Admin Access · ZYREX Control</div>
+
+<section id="loginView" class="auth"><h1>ZYREX ADMIN</h1><p class="muted">Administrator sign-in. This panel is separate from customer accounts.</p><form id="loginForm"><input id="email" type="email" value="admin@zyrex.local" required placeholder="ADMIN EMAIL"><input id="password" type="password" required placeholder="ADMIN PASSWORD"><button>LOGIN TO ADMIN →</button></form><div id="loginStatus" class="error"></div></section>
+
+<section id="panel" class="hidden">
+  <div class="top"><div><h1>ZYREX ADMIN</h1><p class="muted">Orders, products and payment methods.</p></div><button id="logout">LOG OUT</button></div>
+  <div class="tabs">
+    <button data-tab="orders" class="active">ORDERS</button>
+    <button data-tab="products">PRODUCTS</button>
+    <button data-tab="payments">PAYMENT METHODS</button>
+  </div>
+
+  <div id="tabOrders">
+    <div class="bar"><button id="load">REFRESH ORDERS</button><span id="status" class="muted"></span></div>
+    <main id="orders"></main>
+  </div>
+
+  <div id="tabProducts" class="hidden">
+    <div class="card">
+      <h3 id="productFormTitle">Add product</h3>
+      <div class="grid2">
+        <label>Name<input id="pf_name" placeholder="e.g. Landing Kit"></label>
+        <label>Category<input id="pf_category" placeholder="e.g. TEMPLATES"></label>
+        <label class="full">Description<textarea id="pf_description" rows="2" placeholder="What the buyer gets"></textarea></label>
+        <label>Price (IDR)<input id="pf_price" type="number" min="0" step="1000" placeholder="79000"></label>
+        <label>Image URL<input id="pf_image" placeholder="https://... (optional)"></label>
+        <label class="full">Delivery file name<input id="pf_file" placeholder="filename.zip inside backend/private-uploads/products/"></label>
+      </div>
+      <div class="form-actions">
+        <button id="pf_save">SAVE PRODUCT</button>
+        <button id="pf_cancel" class="hidden" style="background:transparent">CANCEL EDIT</button>
+        <span id="pf_status" class="muted"></span>
+      </div>
+    </div>
+    <div class="bar"><button id="loadProducts">REFRESH PRODUCTS</button></div>
+    <main id="products"></main>
+  </div>
+
+  <div id="tabPayments" class="hidden">
+    <div class="card">
+      <h3 id="pmFormTitle">Add payment method</h3>
+      <div class="grid2">
+        <label>Type<select id="pm_type"><option value="QRIS">QRIS</option><option value="BANK_TRANSFER">Bank transfer</option></select></label>
+        <label>Label<input id="pm_label" placeholder="e.g. QRIS — All banks"></label>
+        <div id="pm_qrisFields" class="full" style="grid-column:1/-1"><label>QR image URL<input id="pm_image" placeholder="https://... or assets/your-qris.jpg"></label></div>
+        <div id="pm_bankFields" class="hidden" style="grid-column:1/-1;display:grid;gap:10px;grid-template-columns:1fr 1fr 1fr">
+          <label>Bank name<input id="pm_bankName" placeholder="BCA"></label>
+          <label>Account number<input id="pm_accountNumber" placeholder="1234567890"></label>
+          <label>Account holder<input id="pm_accountHolder" placeholder="ZYREX DIGITAL"></label>
+        </div>
+        <label class="full">Instructions shown to customer<textarea id="pm_instructions" rows="2" placeholder="Scan with any QRIS-supported app."></textarea></label>
+      </div>
+      <div class="form-actions">
+        <button id="pm_save">SAVE PAYMENT METHOD</button>
+        <button id="pm_cancel" class="hidden" style="background:transparent">CANCEL EDIT</button>
+        <span id="pm_status" class="muted"></span>
+      </div>
+    </div>
+    <div class="bar"><button id="loadPayments">REFRESH PAYMENT METHODS</button></div>
+    <main id="payments"></main>
+  </div>
+</section>
+
+<script>
+const API=localStorage.getItem('zyrex_admin_api')||((location.hostname==='localhost'||location.hostname==='127.0.0.1')&&location.port!=='3000'?`${location.protocol}//${location.hostname}:3000/api`:'/api');
+let token=localStorage.getItem('zyrex_admin_token')||'';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+async function api(url,opt={}){opt.headers={'Content-Type':'application/json',...(opt.headers||{}),...(token?{Authorization:'Bearer '+token}:{})};const r=await fetch(API+url,opt);const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Request failed');return j}
+
+function showPanel(){$('#loginView').classList.add('hidden');$('#panel').classList.remove('hidden');load()}
+
+async function login(e){e.preventDefault();const status=$('#loginStatus');status.textContent='Signing in…';try{const r=await fetch(API+'/admin/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('#email').value,password:$('#password').value})});const j=await r.json();if(!r.ok)throw Error(j.error||'Login failed');token=j.token;localStorage.setItem('zyrex_admin_token',token);status.textContent='';showPanel()}catch(err){status.textContent=err.message}}
+
+function handleAuthFail(e){if(/authentication|expired/i.test(e.message)){token='';localStorage.removeItem('zyrex_admin_token');$('#panel').classList.add('hidden');$('#loginView').classList.remove('hidden')}}
+
+// Tabs
+$$('.tabs [data-tab]').forEach(b=>b.onclick=()=>{
+  $$('.tabs [data-tab]').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  ['orders','products','payments'].forEach(t=>$('#tab'+t[0].toUpperCase()+t.slice(1)).classList.toggle('hidden',t!==b.dataset.tab));
+  if(b.dataset.tab==='products')loadProducts();
+  if(b.dataset.tab==='payments')loadPayments();
+});
+
+// Orders
+async function load(){try{const data=await api('/admin/orders');renderOrders(data);$('#status').textContent=data.length+' order(s)'}catch(e){handleAuthFail(e);$('#status').textContent=e.message}}
+function renderOrders(data){$('#orders').innerHTML=data.map(o=>`<article class="order"><b>${esc(o.id)}</b> <span class="${o.status==='PAID'?'paid':o.status==='REJECTED'?'rej':'wait'}">${esc(o.status)}</span><p>${esc(o.customer.name)} · ${esc(o.customer.email)}<br><b>Rp ${Number(o.total).toLocaleString('id-ID')}</b></p><p class="muted">${o.items.map(i=>`${esc(i.productId)} × ${i.quantity}`).join(', ')}</p>${o.proof?`<button data-proof="${esc(o.id)}">VIEW PROOF</button><div id="proof-${esc(o.id)}"></div>`:''}${o.status==='WAITING_VERIFICATION'?`<div class="actions"><button data-approve="${esc(o.id)}">APPROVE & UNLOCK</button><button data-reject="${esc(o.id)}">REJECT</button></div>`:''}</article>`).join('')||'<p class="muted">No orders.</p>'}
+$('#load').onclick=load;
+$('#logout').onclick=async()=>{try{await api('/admin/auth/logout',{method:'POST'})}catch{}token='';localStorage.removeItem('zyrex_admin_token');$('#panel').classList.add('hidden');$('#loginView').classList.remove('hidden')};
+$('#orders').onclick=async e=>{
+  const a=e.target.dataset.approve,r=e.target.dataset.reject,p=e.target.dataset.proof;
+  if(a){try{const j=await api('/admin/orders/'+encodeURIComponent(a)+'/approve',{method:'POST'});alert('Approved. Download links generated:\n'+j.downloads.map(x=>x.productId+': '+API+'/download/'+x.token).join('\n'));load()}catch(x){alert(x.message)}}
+  if(r){try{await api('/admin/orders/'+encodeURIComponent(r)+'/reject',{method:'POST'});load()}catch(x){alert(x.message)}}
+  if(p){const box=$('#proof-'+CSS.escape(p));try{const blob=await (await fetch(API+'/admin/orders/'+encodeURIComponent(p)+'/proof',{headers:{Authorization:'Bearer '+token}})).blob();const url=URL.createObjectURL(blob);box.innerHTML='<img class="proof" src="'+url+'">'}catch(x){box.textContent=x.message}}
+};
+
+// Products
+let editingProductId=null;
+function resetProductForm(){editingProductId=null;$('#productFormTitle').textContent='Add product';$('#pf_name').value='';$('#pf_category').value='';$('#pf_description').value='';$('#pf_price').value='';$('#pf_image').value='';$('#pf_file').value='';$('#pf_cancel').classList.add('hidden');$('#pf_status').textContent=''}
+function fillProductForm(p){editingProductId=p.id;$('#productFormTitle').textContent='Edit product — '+p.name;$('#pf_name').value=p.name;$('#pf_category').value=p.category;$('#pf_description').value=p.description;$('#pf_price').value=p.price;$('#pf_image').value=p.image||'';$('#pf_file').value=p.file_path||'';$('#pf_cancel').classList.remove('hidden')}
+$('#pf_cancel').onclick=resetProductForm;
+async function loadProducts(){try{const data=await api('/admin/products');renderProducts(data)}catch(e){handleAuthFail(e);$('#products').innerHTML=`<p class="error">${esc(e.message)}</p>`}}
+function renderProducts(data){$('#products').innerHTML=data.map(p=>`<article class="order"><div class="row"><div style="display:flex;gap:12px;align-items:center">${p.image?`<img class="thumb" src="${esc(p.image)}">`:''}<div><b>${esc(p.name)}</b><small>${esc(p.category)} · Rp ${Number(p.price).toLocaleString('id-ID')}</small></div></div><span class="pill ${p.active?'on':'off'}">${p.active?'ACTIVE':'HIDDEN'}</span></div><p class="muted" style="margin-top:8px">${esc(p.description)}</p><div class="actions"><button data-edit="${p.id}">EDIT</button><button data-toggle="${p.id}" data-active="${p.active}">${p.active?'HIDE':'SHOW'}</button><button data-delete="${p.id}">DELETE</button></div></article>`).join('')||'<p class="muted">No products yet.</p>'}
+$('#products').onclick=async e=>{
+  const editId=e.target.dataset.edit,toggleId=e.target.dataset.toggle,delId=e.target.dataset.delete;
+  if(editId){try{const data=await api('/admin/products');fillProductForm(data.find(p=>p.id===editId));window.scrollTo({top:0,behavior:'smooth'})}catch(x){alert(x.message)}}
+  if(toggleId){try{await api('/admin/products/'+encodeURIComponent(toggleId),{method:'PATCH',body:JSON.stringify({active:e.target.dataset.active!=='true'})});loadProducts()}catch(x){alert(x.message)}}
+  if(delId){if(!confirm('Delete this product?'))return;try{await api('/admin/products/'+encodeURIComponent(delId),{method:'DELETE'});loadProducts()}catch(x){alert(x.message)}}
+};
+$('#pf_save').onclick=async()=>{
+  const status=$('#pf_status');status.textContent='Saving…';
+  const body={name:$('#pf_name').value,category:$('#pf_category').value,description:$('#pf_description').value,price:Number($('#pf_price').value),image:$('#pf_image').value,file_path:$('#pf_file').value};
+  try{
+    if(editingProductId)await api('/admin/products/'+encodeURIComponent(editingProductId),{method:'PATCH',body:JSON.stringify(body)});
+    else await api('/admin/products',{method:'POST',body:JSON.stringify(body)});
+    status.textContent='Saved.';resetProductForm();loadProducts();
+  }catch(x){status.textContent=x.message}
+};
+$('#loadProducts').onclick=loadProducts;
+
+// Payment methods
+let editingPmId=null;
+function togglePmFields(){const bank=$('#pm_type').value==='BANK_TRANSFER';$('#pm_bankFields').classList.toggle('hidden',!bank);$('#pm_qrisFields').classList.toggle('hidden',bank)}
+$('#pm_type').onchange=togglePmFields;
+function resetPmForm(){editingPmId=null;$('#pmFormTitle').textContent='Add payment method';$('#pm_type').value='QRIS';togglePmFields();$('#pm_label').value='';$('#pm_image').value='';$('#pm_bankName').value='';$('#pm_accountNumber').value='';$('#pm_accountHolder').value='';$('#pm_instructions').value='';$('#pm_cancel').classList.add('hidden');$('#pm_status').textContent=''}
+function fillPmForm(m){editingPmId=m.id;$('#pmFormTitle').textContent='Edit payment method — '+m.label;$('#pm_type').value=m.type;togglePmFields();$('#pm_label').value=m.label;$('#pm_image').value=m.image||'';$('#pm_bankName').value=m.bankName||'';$('#pm_accountNumber').value=m.accountNumber||'';$('#pm_accountHolder').value=m.accountHolder||'';$('#pm_instructions').value=m.instructions||'';$('#pm_cancel').classList.remove('hidden')}
+$('#pm_cancel').onclick=resetPmForm;
+async function loadPayments(){try{const data=await api('/admin/payment-methods');renderPayments(data)}catch(e){handleAuthFail(e);$('#payments').innerHTML=`<p class="error">${esc(e.message)}</p>`}}
+function renderPayments(data){$('#payments').innerHTML=data.map(m=>`<article class="order"><div class="row"><div><b>${esc(m.label)}</b><small>${m.type==='QRIS'?'QRIS':'Bank transfer'}${m.type==='BANK_TRANSFER'?' · '+esc(m.bankName)+' · '+esc(m.accountNumber):''}</small></div><span class="pill ${m.active?'on':'off'}">${m.active?'ACTIVE':'HIDDEN'}</span></div><div class="actions"><button data-edit="${m.id}">EDIT</button><button data-toggle="${m.id}" data-active="${m.active}">${m.active?'HIDE':'SHOW'}</button><button data-delete="${m.id}">DELETE</button></div></article>`).join('')||'<p class="muted">No payment methods yet.</p>'}
+$('#payments').onclick=async e=>{
+  const editId=e.target.dataset.edit,toggleId=e.target.dataset.toggle,delId=e.target.dataset.delete;
+  if(editId){try{const data=await api('/admin/payment-methods');fillPmForm(data.find(m=>m.id===editId));window.scrollTo({top:0,behavior:'smooth'})}catch(x){alert(x.message)}}
+  if(toggleId){try{await api('/admin/payment-methods/'+encodeURIComponent(toggleId),{method:'PATCH',body:JSON.stringify({active:e.target.dataset.active!=='true'})});loadPayments()}catch(x){alert(x.message)}}
+  if(delId){if(!confirm('Delete this payment method?'))return;try{await api('/admin/payment-methods/'+encodeURIComponent(delId),{method:'DELETE'});loadPayments()}catch(x){alert(x.message)}}
+};
+$('#pm_save').onclick=async()=>{
+  const status=$('#pm_status');status.textContent='Saving…';
+  const body={type:$('#pm_type').value,label:$('#pm_label').value,image:$('#pm_image').value,bankName:$('#pm_bankName').value,accountNumber:$('#pm_accountNumber').value,accountHolder:$('#pm_accountHolder').value,instructions:$('#pm_instructions').value};
+  try{
+    if(editingPmId)await api('/admin/payment-methods/'+encodeURIComponent(editingPmId),{method:'PATCH',body:JSON.stringify(body)});
+    else await api('/admin/payment-methods',{method:'POST',body:JSON.stringify(body)});
+    status.textContent='Saved.';resetPmForm();loadPayments();
+  }catch(x){status.textContent=x.message}
+};
+$('#loadPayments').onclick=loadPayments;
+
+document.querySelector('#loginForm').onsubmit=login;
+if(token)showPanel();
+</script>
+</body></html>
